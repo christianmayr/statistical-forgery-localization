@@ -4,13 +4,13 @@ import jpeglib
 import numpy.testing
 
 def load_image() -> jpeglib.DCTJPEG:
-    img = jpeglib.read_dct("./images/double_compressed.jpg")
+    img = jpeglib.read_dct("./images/0_DC_50_0_80_0.jpeg")
     return img
 
 class BasicOperation(unittest.TestCase):
     def test_runs_without_exception(self):
         img = load_image()
-        result = pce.pce(img, range(1,10), max_dct_abs_value=10)
+        result = pce.pce(img, range(0,15), max_dct_abs_value=15)
         
         print(f"\nOutput\n{result}")
         
