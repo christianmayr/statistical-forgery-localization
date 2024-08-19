@@ -102,6 +102,8 @@ def pce(img: jpeglib.DCTJPEG, dct_coefficient_range: range, max_dct_abs_value: i
             img_c1_Y_dct*=q1
             # the result is dequantized DCT coefficients
             
+            # TODO: Add truncation shifts
+            
             ##### Second quantization step #####
             img_c2_Y_dct: list[int] = np.round(np.divide(img_c1_Y_dct, q2)) 
             # the result is quantized DCT coefficients
