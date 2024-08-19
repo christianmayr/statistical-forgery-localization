@@ -1,3 +1,5 @@
+from cProfile import Profile
+from pstats import SortKey, Stats
 import unittest
 from adjpeg import primary_compression_estimation as pce
 import jpeglib
@@ -7,11 +9,24 @@ def load_image() -> jpeglib.DCTJPEG:
     img = jpeglib.read_dct("./images/0_DC_50_0_80_0.jpeg")
     return img
 
+class Benchmark(unittest.TestCase):
+    def test_benchmark(self):
+        img = load_image()
+        
+        with Profile() as profile:
+            result = pce.pce(img, range(0,15), max_dct_abs_value=15)
+            print(f"\nOutput\n{result}")
+            (
+                Stats(profile)
+                .strip_dirs()
+                .sort_stats(SortKey.TIME)
+                .print_stats()
+            )  
+
 class BasicOperation(unittest.TestCase):
     def test_runs_without_exception(self):
         img = load_image()
-        result = pce.pce(img, range(0,15), max_dct_abs_value=15)
-        
+        result = pce.pce(img, range(25,30), max_dct_abs_value=15, __DEBUG__ = True)
         print(f"\nOutput\n{result}")
         
         

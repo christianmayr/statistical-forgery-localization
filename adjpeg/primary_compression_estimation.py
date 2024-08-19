@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import jpeglib
 from jpeglib import DCTJPEG
 
-def zz_index_8x8(i: int):
+def zz_index_8x8(index: int):
     """
     Calculates x and y index for zig-zag traversal for the i-th index for a 8x8 matrix
     
@@ -12,28 +12,37 @@ def zz_index_8x8(i: int):
     
     Returns: x and y index for zig-zag traversal for the i-th index
     """
-    ROW_STARTS = [1,2,4,7,11,16,22,29,37,44,50,55,59,62,64,65]
     
+    # calculate in which diagonal counted from the top left corner the number resides
+    ROW_STARTS = [1,2,4,7,11,16,22,29,37,44,50,55,59,62,64,65]
     diagonal = 0
-    for index, item in enumerate(ROW_STARTS):
-        if not i >= item-1:
-            diagonal = index-1
+    for i, row_start in enumerate(ROW_STARTS):
+        if not index >= row_start-1:
+            diagonal = i-1
             break
         
-    diagnoal_index = i-(ROW_STARTS[diagonal]-1)
+    # calculate the index of the number within the diagonal row
+    diagnoal_index = index-(ROW_STARTS[diagonal]-1)
         
+    # if the diagonal is going from left bottom to right top
     if diagonal%2 == 0:
-        # upward diagnoal
+        # calculate the diagonal start indices
         diagonal_start_x = diagonal if diagonal < 8 else 7
         diagonal_start_y = 0 if diagonal < 8 else diagonal-7
+        
+        # return the with the offset from the start indices
         return (diagonal_start_x - diagnoal_index, diagonal_start_y + diagnoal_index)
+    
+    # if the diagonal is going from right top to left bottom
     else:
-        # downward diagnoal
+        # calculate the diagonal start indices
         diagonal_start_x = 0 if diagonal < 8 else diagonal-7
         diagonal_start_y = diagonal if diagonal < 8 else 7
+        
+        # return the with the offset from the start indices
         return (diagonal_start_x + diagnoal_index, diagonal_start_y - diagnoal_index)
 
-def pce(img: jpeglib.DCTJPEG, dct_coefficient_range: range, max_dct_abs_value: int = 15):
+def pce(img: jpeglib.DCTJPEG, dct_coefficient_range: range, max_dct_abs_value: int = 15, max_quantization_step = 100, __DEBUG__ = False):
     """
     Estimate the first quantization matrix for a double-compressed image.
     
@@ -67,45 +76,52 @@ def pce(img: jpeglib.DCTJPEG, dct_coefficient_range: range, max_dct_abs_value: i
     # img_spatial_cropped.write_spatial("img_q2.jpeg", qt=img.qt)
     # img_q2 = jpeglib.read_dct("img_q2.jpeg")
     
-    max_quantization_step = 255
-    q1 = np.full((8,8), np.nan)
+    q1_result = np.full((8,8), np.nan)
     
-    for dct_coefficient in dct_coefficient_range:
+    for current_coefficient in dct_coefficient_range:
         # get coordinates for the DCT coefficient and the qt step
-        x, y = zz_index_8x8(dct_coefficient)
+        x, y = zz_index_8x8(current_coefficient)
         
-        # calculate histogram for DCT coefficient in the original image
-        img_Y_single_c_histogram, _ = np.histogram(img.Y[:,:,x,y], bins=np.arange(-max_dct_abs_value, max_dct_abs_value + 2) - 0.5)
+        # get DCT coefficient array from the cropped image
+        img_0_Y_dct = img_0.Y[:,:,x,y].copy()
+        img_0_Y_dct.sort()
         
-        # get quantization step of the qt in the original image
-        q2_i = img.qt[0][zz_index_8x8(dct_coefficient)]
+        # get DCT coefficient array from the original image and calculate the histogram
+        img_Y_dct_histogram, _ = np.histogram(img.Y[:,:,x,y], bins=np.arange(-max_dct_abs_value, max_dct_abs_value + 2) - 0.5)
+        
+        # get quantization step of the qt in the original image for the corresponding current_coefficient
+        q2: int = img.qt[0][zz_index_8x8(current_coefficient)]
         
         l_max = np.inf
-        for i in range(max_quantization_step):
-            q1_i = i+1 # quantization step is always >=1, index i starts from zero
+        for q1 in range(1, max_quantization_step+1):
                         
-            # First quantization step
-            # DCT coefficients in img_0 are int quantized form, but with quantization step 1
-            c1_Y_single_c = np.round(img_0.Y[:,:,x,y] / q1_i).astype(int)
-            c1_Y_single_c *= q1_i
+            ##### First quantization step #####
+            # DCT coefficients in img_0 are quantized with value 1
+            # Hence no multiplication needs to be performed to dequantize the coefficients
+            img_c1_Y_dct: list[int] = np.round(np.divide(img_0_Y_dct, q1))
+            img_c1_Y_dct*=q1
+            # the result is dequantized DCT coefficients
             
-            # TODO: introduce truncation errors
+            ##### Second quantization step #####
+            img_c2_Y_dct: list[int] = np.round(np.divide(img_c1_Y_dct, q2)) 
+            # the result is quantized DCT coefficients
             
-            # Second quantization step
-            c2_Y_single_c = np.round(c1_Y_single_c / q2_i).astype(int)
-            # do not multiply with q2 since the compared values are already quantized
+            # calculate the histogram of the double quantized coefficients
+            img_c2_Y_dct_histogram, _ = np.histogram(img_c2_Y_dct, bins=np.arange(-max_dct_abs_value, max_dct_abs_value + 2) - 0.5)
             
-            c2_Y_single_c_histogram, _ = np.histogram(c2_Y_single_c, bins=np.arange(-max_dct_abs_value, max_dct_abs_value + 2) - 0.5)
-                        
-            l = np.sum(abs(c2_Y_single_c_histogram-img_Y_single_c_histogram))
+            # compare to the histogram of the original image
+            l = np.sum(np.abs(np.subtract(img_c2_Y_dct_histogram, img_Y_dct_histogram)))
+            
+            
             if l < l_max:
                 l_max = l
-                q1[zz_index_8x8(dct_coefficient)]=q1_i
-                w_histogram = c2_Y_single_c_histogram
+                q1_result[zz_index_8x8(current_coefficient)]=q1
+                w_histogram = img_c2_Y_dct_histogram
          
-        # TODO: print if debug is enabled        
-        #print(f"DCT_coefficient: {dct_coefficient}; Q1: {q1[zz_index_8x8(dct_coefficient)]}, L: {l_max}")
-        #print(img_Y_single_c_histogram)
-        #print(w_histogram)
+        if __DEBUG__:
+            print(f"DCT_coefficient: {current_coefficient}; (x,y): ({x},{y}); Q1: {q1_result[zz_index_8x8(current_coefficient)]}; L: {l_max}")
+            print("index\timg\tapprox")
+            for i in range(len(w_histogram)):
+                print(f"{i-max_dct_abs_value}\t{img_Y_dct_histogram[i]}\t{w_histogram[i]}")
         
-    return q1
+    return q1_result
