@@ -27,8 +27,8 @@ def primary_quantization_estimation(
     ), "Number of DCT coefficients per block has to be 64"
 
     # Create cropped version to sample from
-    img.write_dct("temp.jpeg")
-    img_spatial = jpeglib.read_spatial("temp.jpeg")
+    img.write_dct("temp/temp.jpeg")
+    img_spatial = jpeglib.read_spatial("temp/temp.jpeg")
 
     shape_spatial = img_spatial.spatial.shape
     assert (
@@ -44,8 +44,8 @@ def primary_quantization_estimation(
     img_spatial_cropped.height -= 8
 
     # Create img_0 (DCT coefficients sampled without compression)
-    img_spatial_cropped.write_spatial("img_0.jpeg", qt=100)
-    img_0 = jpeglib.read_dct("img_0.jpeg")
+    img_spatial_cropped.write_spatial("temp/img_0.jpeg", qt=100)
+    img_0 = jpeglib.read_dct("temp/img_0.jpeg")
 
     # Create img_q2 (DCT coefficients sampled with only second compression)
     # img_spatial_cropped.write_spatial("img_q2.jpeg", qt=img.qt)

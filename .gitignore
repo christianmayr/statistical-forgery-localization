@@ -163,3 +163,8 @@ cython_debug/
 
 # vscode
 .vscode/*
+
+# input and output of program
+images/*
+output/*
+temp/*
