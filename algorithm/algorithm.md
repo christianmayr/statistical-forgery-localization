@@ -18,14 +18,16 @@ $$p(x|\mathcal{H}_0)=\tilde{h}(x)$$
 
 pDQ describes an approximated probability distribution for quantized DTC value $x$ with quantization steps $Q_1$ and $Q_2$.
 
-$$p_\text{DQ}(x;Q_2,Q_2) \approx n_\text{DQ}(x) \cdot p_\text{NDQ}(x;Q_2), x \neq 0$$
+$$p_\text{DQ}(x;Q_1,Q_2) \approx n_\text{DQ}(x) \cdot p_\text{NDQ}(x;Q_2), x \neq 0$$
 
 $$n_\text{DQ}(x) = (R(x)-L(x))/Q_2 > 0$$
 
 We cannot calculate the values for L and R, because they are dependent on $Q_1$, so we again have to find an approximation. We can again use one from the previous paper:
 
-$$L'(x) = Q_2x-\dfrac{Q_2}{2}, L'(x) = Q_2x+\dfrac{Q_2}{2}$$
+$$L'(x) = Q_2x-\dfrac{Q_2}{2}, R'(x) = Q_2x+\dfrac{Q_2}{2}$$
 
 This is still rather far off the actual model (see figure), but this is something that has to be tried out.
 
 ![LR](img/LR.png)
+
+The r/t error using the actual fft and ifft is not feasible as the entire 8x8 block has to be converted, with each quantization step having a latent effect on the rounding and truncating of the single values.
