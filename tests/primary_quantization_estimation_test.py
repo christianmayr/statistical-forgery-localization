@@ -1,7 +1,7 @@
 from cProfile import Profile
 from pstats import SortKey, Stats
 import unittest
-from adjpeg import primary_compression_estimation as pce
+from adjpeg.primary_quantization_estimation import primary_quantization_estimation
 import jpeglib
 import numpy.testing
 
@@ -16,7 +16,7 @@ class Benchmark(unittest.TestCase):
         img = load_image("./images/0_DC_50_0_80_0.jpeg")
 
         with Profile() as profile:
-            result = pce.primary_quantization_estimation(
+            result = primary_quantization_estimation(
                 img, range(0, 15), max_dct_abs_value=15
             )
             print(f"\nOutput\n{result}")
@@ -26,21 +26,21 @@ class Benchmark(unittest.TestCase):
 class BasicOperation(unittest.TestCase):
     def test_runs_without_exception(self):
         img = load_image("./images/double_compressed.jpg")
-        result = pce.primary_quantization_estimation(
+        result = primary_quantization_estimation(
             img, range(0, 10), max_dct_abs_value=15, __DEBUG__=True
         )
         print(f"\nOutput\n{result}")
 
     def test_with_QF_75_80(self):
         img = load_image("./images/0_DC_75_0_80_0.jpeg")
-        result = pce.primary_quantization_estimation(
+        result = primary_quantization_estimation(
             img, range(0, 10), max_dct_abs_value=15, __DEBUG__=True
         )
         print(f"\nOutput\n{result}")
 
     def test_with_QF_50_80(self):
         img = load_image("./images/0_DC_50_0_80_0.jpeg")
-        result = pce.primary_quantization_estimation(
+        result = primary_quantization_estimation(
             img, range(0, 32), max_dct_abs_value=15, __DEBUG__=True
         )
 

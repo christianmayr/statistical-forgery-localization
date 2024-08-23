@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import jpeglib
 from jpeglib import DCTJPEG
-from adjpeg import utils
+from adjpeg.utils import zz_index_8x8
 
 
 def primary_quantization_estimation(
@@ -58,7 +58,7 @@ def primary_quantization_estimation(
 
     for current_coefficient in dct_coefficient_range:
         # get coordinates for the DCT coefficient and the qt step
-        x, y = utils.zz_index_8x8(current_coefficient)
+        x, y = zz_index_8x8(current_coefficient)
 
         # get DCT coefficient array from the cropped image
         img_0_Y_dct = img_0.Y[:, :, x, y].copy()
@@ -71,7 +71,7 @@ def primary_quantization_estimation(
         )
 
         # get quantization step of the qt in the original image for the corresponding current_coefficient
-        q2: int = img.qt[0][utils.zz_index_8x8(current_coefficient)]
+        q2: int = img.qt[0][zz_index_8x8(current_coefficient)]
 
         l_max = np.inf
         for q1 in range(1, max_quantization_step + 1):
@@ -100,13 +100,13 @@ def primary_quantization_estimation(
 
             if l < l_max:
                 l_max = l
-                q1_result[utils.zz_index_8x8(current_coefficient)] = q1
+                q1_result[zz_index_8x8(current_coefficient)] = q1
                 w_histogram = img_c2_Y_dct_histogram
 
         l_sum += l_max
         if __DEBUG__:
             print(
-                f"DCT_coefficient: {current_coefficient}; (x,y): ({x},{y}); Q1: {q1_result[utils.zz_index_8x8(current_coefficient)]}; L: {l_max}"
+                f"DCT_coefficient: {current_coefficient}; (x,y): ({x},{y}); Q1: {q1_result[zz_index_8x8(current_coefficient)]}; L: {l_max}"
             )
             print("index\timg\tapprox")
             for i in range(len(w_histogram)):

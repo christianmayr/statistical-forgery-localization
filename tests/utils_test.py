@@ -1,13 +1,13 @@
 import numpy
 import unittest
-from adjpeg import utils
+from adjpeg.utils import zz_index_8x8
 
 
 class Utils(unittest.TestCase):
     def test_zz_index_8x8(self):
         test = numpy.full((8, 8), numpy.nan)
         for i in range(64):
-            test[utils.zz_index_8x8(i)] = i
+            test[zz_index_8x8(i)] = i
 
         ref = numpy.array(
             [

@@ -2,7 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import jpeglib
 from jpeglib import DCTJPEG
-from adjpeg import utils
+from adjpeg.utils import zz_index_8x8
+from adjpeg.primary_quantization_estimation import primary_quantization_estimation
 
 
 def adjpeg_localization(img: jpeglib.DCTJPEG, dct_coefficient_range: range):
@@ -15,7 +16,7 @@ def adjpeg_localization(img: jpeglib.DCTJPEG, dct_coefficient_range: range):
 
     for current_coefficient in dct_coefficient_range:
         # get coordinates for the DCT coefficient and the qt step
-        x, y = utils.zz_index_8x8(current_coefficient)
+        x, y = zz_index_8x8(current_coefficient)
 
         img_Y_dct = img.Y[:, :, x, y]
 
