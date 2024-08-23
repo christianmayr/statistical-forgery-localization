@@ -11,14 +11,14 @@ from adjpeg_localization import adjpeg_localization
 def parse_range(value):
     try:
         start, end = map(int, value.split("-"))
-        if start > end:
+        if start >= end:
             raise argparse.ArgumentTypeError(
-                f"Start of range ({start}) cannot be greater than end ({end})."
+                f"Start of range ({start}) cannot be greater/equal to end ({end}). See help (-h) page."
             )
         return range(start, end)
     except ValueError:
         raise argparse.ArgumentTypeError(
-            f"Invalid range: '{value}'. Expected format 'start-end'."
+            f"Invalid range: '{value}'. Expected format 'start-end'. See help (-h) page."
         )
 
 
@@ -63,8 +63,11 @@ if __name__ == "__main__":
         choices=RangeContainer(1, 64),
         default=range(1, 12),
         metavar="range",
-        help="integer range of zero-indexed DCT coefficients between 0 and 63 to be analysed. write as two integers with '-' in between. in 'a-b' the first coefficient is 'a' and the last coefficient is 'b-1'",
+        help="integer range of zero-indexed DCT coefficients between 0 and 63 to be analysed. write as two integers with '-' in between. in 'a-b' the first coefficient is 'a' and the last coefficient is 'b-1' (like the python range() method)",
     )
+
+    # TODO: add quiet argument
+    # TODO: add output path/file
 
     # Run program
     args = parser.parse_args()
@@ -78,9 +81,9 @@ if __name__ == "__main__":
         exit(e.errno)
 
     print(
-        f"{adjpegBanner}\nStarting statistical ADJPEG manipulation localization with arguments \
+        f"{adjpegBanner}\nStarting statistical ADJPEG manipulation localization with parameters \
         \n\tImage: {image_path} \
-        \n\First DCT Coefficient: {dct_coefficient_range.start} \
+        \n\tFirst DCT Coefficient: {dct_coefficient_range.start} \
         \n\tLast DCT Coefficient: {dct_coefficient_range.stop-1}"
     )
 
