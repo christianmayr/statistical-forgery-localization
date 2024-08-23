@@ -36,3 +36,12 @@ def zz_index_8x8(index: int):
 
         # return the with the offset from the start indices
         return (diagonal_start_x + diagnoal_index, diagonal_start_y - diagnoal_index)
+
+
+adjpegBanner: str = """
+    _    ____      _ ____  _____ ____ 
+   / \  |  _ \    | |  _ \| ____/ ___|
+  / _ \ | | | |_  | | |_) |  _|| |  _ 
+ / ___ \| |_| | |_| |  __/| |__| |_| |
+/_/   \_\____/ \___/|_|   |_____\____|
+"""

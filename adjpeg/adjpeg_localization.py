@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import jpeglib
 from jpeglib import DCTJPEG
-from adjpeg.utils import zz_index_8x8
-from adjpeg.primary_quantization_estimation import primary_quantization_estimation
+from utils import zz_index_8x8
+from primary_quantization_estimation import primary_quantization_estimation
 
 
 def adjpeg_localization(img: jpeglib.DCTJPEG, dct_coefficient_range: range):
@@ -11,6 +11,9 @@ def adjpeg_localization(img: jpeglib.DCTJPEG, dct_coefficient_range: range):
     assert (
         np.prod(img.Y.shape[2:]) == 64
     ), "Number of DCT coefficients per block has to be 64"
+
+    Q1 = primary_quantization_estimation(img, dct_coefficient_range)
+    Q2 = img.qt[0]
 
     likelyhood_map = np.full(img.Y.shape[:2], 1, dtype=float)
 

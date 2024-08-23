@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import jpeglib
 from jpeglib import DCTJPEG
-from adjpeg.utils import zz_index_8x8
+from utils import zz_index_8x8
 
 
 def primary_quantization_estimation(
