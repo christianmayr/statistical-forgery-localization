@@ -165,6 +165,5 @@ cython_debug/
 .vscode/*
 
 # input and output of program
-images/*
 output/*
 temp/*
