@@ -15,7 +15,7 @@ def parse_range(value):
             raise argparse.ArgumentTypeError(
                 f"Start of range ({start}) cannot be greater than end ({end})."
             )
-        return range(start, end + 1)
+        return range(start, end)
     except ValueError:
         raise argparse.ArgumentTypeError(
             f"Invalid range: '{value}'. Expected format 'start-end'."
@@ -60,10 +60,10 @@ if __name__ == "__main__":
         "--dct-range",
         "-r",
         type=parse_range,
-        choices=RangeContainer(1, 65),
+        choices=RangeContainer(1, 64),
         default=range(1, 12),
         metavar="range",
-        help="integer range of DCT coefficients to be analysed. write as two integers with '-' in between",
+        help="integer range of zero-indexed DCT coefficients between 0 and 63 to be analysed. write as two integers with '-' in between. in 'a-b' the first coefficient is 'a' and the last coefficient is 'b-1'",
     )
 
     # Run program
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     print(
         f"{adjpegBanner}\nStarting statistical ADJPEG manipulation localization with arguments \
         \n\tImage: {image_path} \
-        \n\tStart DCT Coefficient: {dct_coefficient_range.start} \
+        \n\First DCT Coefficient: {dct_coefficient_range.start} \
         \n\tLast DCT Coefficient: {dct_coefficient_range.stop-1}"
     )
 
