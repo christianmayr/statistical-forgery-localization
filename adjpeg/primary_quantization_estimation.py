@@ -48,13 +48,11 @@ def primary_quantization_estimation(
     img_0 = jpeglib.read_dct("temp/img_0.jpeg")
 
     # Create img_q2 (DCT coefficients sampled with only second compression)
-    # img_spatial_cropped.write_spatial("img_q2.jpeg", qt=img.qt)
-    # img_q2 = jpeglib.read_dct("img_q2.jpeg")
+    img_spatial_cropped.write_spatial("img_q2.jpeg", qt=img.qt)
+    img_q2 = jpeglib.read_dct("img_q2.jpeg")
 
     q1_result = np.full((8, 8), np.nan)
     l_sum = 0
-
-    # TODO: Add expectation maximization
 
     for current_coefficient in dct_coefficient_range:
         # get coordinates for the DCT coefficient and the qt step
@@ -62,7 +60,13 @@ def primary_quantization_estimation(
 
         # get DCT coefficient array from the cropped image
         img_0_Y_dct = img_0.Y[:, :, x, y].copy()
-        img_0_Y_dct.sort()
+        img_q2_Y_dct = img_q2.Y[:, :, x, y].copy()
+
+        # create histogram of single compressed version
+        img_q2_Y_dct_histogram, _ = np.histogram(
+            img_q2_Y_dct,
+            bins=np.arange(-max_dct_abs_value, max_dct_abs_value + 2) - 0.5,
+        )
 
         # get DCT coefficient array from the original image and calculate the histogram
         img_Y_dct_histogram, _ = np.histogram(
@@ -95,8 +99,12 @@ def primary_quantization_estimation(
 
             # TODO: Maybe add gaussean filter to img_c2_Y_dct_histogram to implement R/T error
 
-            # compare to the histogram of the original image
-            l = np.sum(np.abs(np.subtract(img_c2_Y_dct_histogram, img_Y_dct_histogram)))
+            # compare the histogram of the original image to the mixture of estimated histograms
+            original_histogram = img_Y_dct_histogram
+            estimated_histogram = (
+                0.5 * img_c2_Y_dct_histogram + 0.5 * img_q2_Y_dct_histogram
+            )
+            l = np.sum(np.abs(np.subtract(estimated_histogram, original_histogram)))
 
             if l < l_max:
                 l_max = l
@@ -116,5 +124,6 @@ def primary_quantization_estimation(
 
     if __DEBUG__:
         print(f"Error Sum: {l_sum}")
+        print(q1_result)
 
     return q1_result
