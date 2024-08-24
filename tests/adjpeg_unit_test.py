@@ -13,5 +13,5 @@ def load_image(image_path) -> jpeglib.DCTJPEG:
 
 class BasicOperation(unittest.TestCase):
     def test_runs_without_exception(self):
-        img = load_image("./images/double_compressed.jpg")
+        img = load_image("./images/halves/0_DC_50_0_75_0.jpeg")
         adjpeg_localization(img, range(1, 12))
