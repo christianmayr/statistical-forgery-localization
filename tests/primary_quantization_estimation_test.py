@@ -13,7 +13,7 @@ def load_image(image_path) -> jpeglib.DCTJPEG:
 
 class Benchmark(unittest.TestCase):
     def test_benchmark(self):
-        img = load_image("./images/0_DC_50_0_80_0.jpeg")
+        img = load_image("./images/sample_image.jpeg")
 
         with Profile() as profile:
             result = primary_quantization_estimation(img, range(0, 15))
