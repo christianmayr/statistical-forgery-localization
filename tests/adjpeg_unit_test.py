@@ -1,5 +1,17 @@
+from cProfile import Profile
+from pstats import SortKey, Stats
 import unittest
+from adjpeg.adjpeg_localization import adjpeg_localization
+import jpeglib
+import numpy.testing
 
-class UnittestEnvironment(unittest.TestCase):
-    def test_env(self):
-        print("hw")
+
+def load_image(image_path) -> jpeglib.DCTJPEG:
+    img = jpeglib.read_dct(image_path)
+    return img
+
+
+class BasicOperation(unittest.TestCase):
+    def test_runs_without_exception(self):
+        img = load_image("./images/double_compressed.jpg")
+        adjpeg_localization(img, range(1, 12))
