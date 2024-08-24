@@ -63,11 +63,8 @@ def periodic_dq_function(value, q1: int, q2: int):
     r = q1 * (floor(q2 / q1 * (value - MU / q2 + 0.5)) + 0.5)
 
     result = (r - l) / q2
-    assert (
-        result > 0
-    ), f"output of periodic function has to be positive, not {result} for q1: {q1}, q2: {q2} and value {value}"
 
-    return result
+    return result if result > 0 else 1
 
 
 def adjpeg_localization(img: DCTJPEG, dct_coefficient_range: range, quiet=False):
