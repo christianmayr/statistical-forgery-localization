@@ -68,6 +68,7 @@ if __name__ == "__main__":
 
     # TODO: add quiet argument
     # TODO: add output path/file
+    # TODO: add DCT range argument
 
     # Run program
     args = parser.parse_args()
@@ -87,4 +88,8 @@ if __name__ == "__main__":
         \n\tLast DCT Coefficient: {dct_coefficient_range.stop-1}"
     )
 
-    adjpeg_localization(img, dct_coefficient_range)
+    try:
+        adjpeg_localization(img, dct_coefficient_range)
+    except ValueError as e:
+        print(e)
+        exit(1)

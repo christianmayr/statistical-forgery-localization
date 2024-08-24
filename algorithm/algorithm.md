@@ -36,6 +36,10 @@ We estimate the distribution of the unquantized DCT coefficients using the follo
 
 $$ p_v(h) = \frac{h(v)+1}{N+N_{\text{bin}}} $$
 
-where N is the number of DCT coefficients and $N_{\text{bin}}$ is the number of bins in the histogram. h(v) is calculated by compressing a shifted version of the tampered image with QF 100.
+where N is the number of DCT coefficients (number of blocks in the image) and $N_{\text{bin}}$ is the number of bins in the histogram. h(v) is calculated by compressing a shifted version of the tampered image with QF 100.
 
-The overall result is a likelyhood map, which shows, which regions of an image are doubly compressed (does not go by SCF hypothesis).
+The overall result is a likelihood map, which shows, which regions of an image are doubly compressed (does not go by SCF hypothesis).
+
+The 2D arrays for $p(x | \mathcal{H}_0)$ and $p(x | \mathcal{H}_1)$ for every block in the image is calculated for each coefficient and the likelihood map is calculated as follows:
+
+$$\mathcal{L}(i,j) = \mathcal{L}(i,j)\cdot \frac{p(x(i,j) | \mathcal{H}_1; Q_1)}{p(x | \mathcal{H}_0)}$$

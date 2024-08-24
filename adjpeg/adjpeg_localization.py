@@ -7,6 +7,9 @@ from primary_quantization_estimation import primary_quantization_estimation
 from math import floor, ceil
 
 P0_SHIFT = 1
+# DCT_RANGE = (-1024, 1024)
+DCT_RANGE = 1024
+DCT_COEFFICIENTS_PER_BLOCK = 64
 
 
 def estimate_unquantized_DCT(img: DCTJPEG) -> DCTJPEG:
@@ -33,12 +36,25 @@ def estimate_unquantized_DCT(img: DCTJPEG) -> DCTJPEG:
     return img_0
 
 
-def probability_single_compressed(value, unquantized_distribution):
-    pass
+def probability_single_compressed(value: int, q2: int, p0):
+    lower_bound = round(q2 * value - q2 / 2)
+    if lower_bound < -DCT_RANGE:
+        raise ValueError(
+            f"Error: Lower bound {lower_bound} in pNDQ function is lower than DCT range {-DCT_RANGE}. Set a higher DCT range!"
+        )
 
+    upper_bound = round(q2 * value + q2 / 2)
+    if upper_bound > DCT_RANGE:
+        raise ValueError(
+            f"Error: Upper bound {upper_bound} in pNDQ function is higher than DCT range {DCT_RANGE}. Set a higher DCT range!"
+        )
 
-def probability_double_compressed(value, q1, unquantized_distribution):
-    pass
+    result: float = 0
+    for i in range(lower_bound, upper_bound + 1):
+        # TODO verify for asymmetric DCT range
+        result += p0[i + DCT_RANGE]
+
+    return result
 
 
 def periodic_dq_function(value, q1: int, q2: int):
@@ -47,7 +63,9 @@ def periodic_dq_function(value, q1: int, q2: int):
     r = q1 * (floor(q2 / q1 * (value - MU / q2 + 0.5)) + 0.5)
 
     result = (r - l) / q2
-    assert result > 0, "output of periodic function has to be positive"
+    assert (
+        result > 0
+    ), f"output of periodic function has to be positive, not {result} for q1: {q1}, q2: {q2} and value {value}"
 
     return result
 
@@ -72,11 +90,15 @@ def adjpeg_localization(img: DCTJPEG, dct_coefficient_range: range, quiet=False)
     Q2 = img.qt[0]
 
     if not quiet:
-        print("Estimating unquantized DCT coefficient")
+        print("Estimating unquantized DCT coefficients")
     img0 = estimate_unquantized_DCT(img)
 
     # likelyhood map does not yet fulfill SCF hypothesis
     likelyhood_map = np.full(img.Y.shape[:2], 1, dtype=float)
+
+    # set image block height and width for quick reference:
+    block_width = img.width_in_blocks(0)
+    block_height = img.height_in_blocks(0)
 
     if not quiet:
         print("Starting likelyhood map calculation")
@@ -86,31 +108,52 @@ def adjpeg_localization(img: DCTJPEG, dct_coefficient_range: range, quiet=False)
 
         # get coordinates for the DCT coefficient and the qt step
         x, y = zz_index_8x8(current_coefficient)
+        current_q1 = Q1[x, y]
+        current_q2 = Q2[x, y]
 
+        # calculate probability distribution of coefficient values
+        img0_Y_dct_histogram, _ = np.histogram(
+            img0.Y[:, :, x, y],
+            bins=np.arange(-DCT_RANGE, DCT_RANGE + 2) - 0.5,
+        )
+        p0 = (img0_Y_dct_histogram + 1) / (
+            block_width * block_height + (-DCT_RANGE + 2 - DCT_RANGE)
+        )
+
+        # create working arrays
         img_Y_dct = img.Y[:, :, x, y].copy()
+        if np.all(img_Y_dct == 0):
+            raise ValueError(
+                f"Error: DCT coefficient {current_coefficient} is zero in the entire image. Choose a different range of DCT coefficients!"
+            )
+        probability_H0 = np.zeros((block_height, block_width), dtype=float)
+        probability_H1 = np.zeros((block_height, block_width), dtype=float)
 
-        for x in range(img_Y_dct.shape[0]):
-            for y in range(img_Y_dct.shape[1]):
-                pass
+        for x_block in range(block_width):
+            for y_block in range(block_height):
+                value = img_Y_dct[y_block, x_block]
 
-        probability_single_compressed = None
-        probability_double_compressed = None
+                p_H0 = probability_single_compressed(value, current_q2, p0)
 
-        # likelyhood_map *= probability_double_compressed / probability_single_compressed
+                probability_H0[y_block, x_block] = p_H0
+                probability_H1[y_block, x_block] = p_H0 * periodic_dq_function(
+                    value, current_q1, current_q2
+                )
+
+        likelyhood_map *= probability_H0 / probability_H1
 
     # output image
     if not quiet:
         print("Writing likelyhood map to output/output.jpeg")
 
-    likelyhood_min = np.min(likelyhood_map)
-    likelyhood_max = np.max(likelyhood_map)
-
     assert (
-        likelyhood_max - likelyhood_min != 0
+        likelyhood_map.max() - likelyhood_map.min() != 0
     ), "Likelyhood map is the same over all values"
 
     likelyhood_map_scaled = (
-        (likelyhood_map - likelyhood_min) * 255 / (likelyhood_max - likelyhood_min)
+        (likelyhood_map - likelyhood_map.min())
+        * 255
+        / (likelyhood_map.max() - likelyhood_map.min())
     )
 
     block_shape = (8, 8)
