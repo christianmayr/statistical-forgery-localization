@@ -1,12 +1,10 @@
 import argparse
 from pathlib import Path
-from io import TextIOWrapper
 import jpeglib
 from collections.abc import Container
 from utils import adjpegBanner
 from adjpeg_localization import adjpeg_localization
 from output import write_img_output
-import numpy as np
 
 
 # Utils to have range as a checked argument

@@ -1,9 +1,6 @@
-from cProfile import Profile
-from pstats import SortKey, Stats
 import unittest
 from adjpeg.adjpeg_localization import adjpeg_localization
 import jpeglib
-import numpy.testing
 
 
 def load_image(image_path) -> jpeglib.DCTJPEG:

@@ -1,7 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import jpeglib
-from jpeglib import DCTJPEG
 from utils import zz_index_8x8
 
 DCT_RANGE = 1024
