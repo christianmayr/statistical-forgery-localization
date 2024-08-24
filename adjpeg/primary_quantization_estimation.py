@@ -98,6 +98,7 @@ def primary_quantization_estimation(
             )
 
             # TODO: Maybe add gaussean filter to img_c2_Y_dct_histogram to implement R/T error
+            # TODO: Make add mixture estimation instead of statically set mixture
 
             # compare the histogram of the original image to the mixture of estimated histograms
             original_histogram = img_Y_dct_histogram

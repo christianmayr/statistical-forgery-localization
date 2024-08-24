@@ -7,7 +7,6 @@ from primary_quantization_estimation import primary_quantization_estimation
 from math import floor, ceil
 
 P0_SHIFT = 1
-# DCT_RANGE = (-1024, 1024)
 DCT_RANGE = 1024
 DCT_COEFFICIENTS_PER_BLOCK = 64
 
@@ -51,7 +50,6 @@ def probability_single_compressed(value: int, q2: int, p0):
 
     result: float = 0
     for i in range(lower_bound, upper_bound + 1):
-        # TODO verify for asymmetric DCT range
         result += p0[i + DCT_RANGE]
 
     return result
