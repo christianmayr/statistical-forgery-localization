@@ -25,18 +25,20 @@ class Benchmark(unittest.TestCase):
 
 class BasicOperation(unittest.TestCase):
     def test_runs_without_exception(self):
-        img = load_image("./images/double_compressed.jpg")
+        img = load_image("./images/halves/0_DC_75_0_80_0.jpeg")
         result = primary_quantization_estimation(
-            img, range(0, 10), max_dct_abs_value=15, __DEBUG__=True
+            img,
+            range(0, 10),
+            max_dct_abs_value=40,
+            max_quantization_step=20,
+            __DEBUG__=True,
         )
-        print(f"\nOutput\n{result}")
 
     def test_with_QF_75_80(self):
         img = load_image("./images/0_DC_75_0_80_0.jpeg")
         result = primary_quantization_estimation(
             img, range(0, 10), max_dct_abs_value=15, __DEBUG__=True
         )
-        print(f"\nOutput\n{result}")
 
     def test_with_QF_50_80(self):
         img = load_image("./images/0_DC_50_0_80_0.jpeg")
@@ -56,8 +58,6 @@ class BasicOperation(unittest.TestCase):
                 [72, 92, 95, 98, 112, 100, 103, 99],
             ]
         )
-
-        print(f"\nOutput\n{result}")
 
         comparison_func = numpy.vectorize(
             lambda x, y: numpy.nan if x == numpy.nan else x - y

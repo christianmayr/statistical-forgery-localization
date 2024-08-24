@@ -1,10 +1,12 @@
 import argparse
-import pathlib
+from pathlib import Path
 from io import TextIOWrapper
 import jpeglib
 from collections.abc import Container
 from utils import adjpegBanner
 from adjpeg_localization import adjpeg_localization
+from output import write_img_output
+import numpy as np
 
 
 # Utils to have range as a checked argument
@@ -54,29 +56,53 @@ if __name__ == "__main__":
 
     # Add arguments
     parser.add_argument(
-        "image_path", type=str, help="input image file path in JPEG format"
+        "image_path", type=Path, help="input image file path in JPEG format"
     )
     parser.add_argument(
         "--dct-range",
         "-r",
         type=parse_range,
-        choices=RangeContainer(1, 64),
+        choices=RangeContainer(0, 64),
         default=range(1, 12),
         metavar="range",
         help="integer range of zero-indexed DCT coefficients between 0 and 63 to be analysed. write as two integers with '-' in between. in 'a-b' the first coefficient is 'a' and the last coefficient is 'b-1' (like the python range() method)",
     )
-
-    # TODO: add quiet argument
-    # TODO: add output path/file
-    # TODO: add DCT range argument
+    parser.add_argument(
+        "--quiet",
+        "-q",
+        action="store_const",
+        const=True,
+        default=False,
+        help="non verbose program output.",
+    )
+    parser.add_argument(
+        "--debug",
+        "-d",
+        action="store_const",
+        const=True,
+        default=False,
+        help="very verbose program output.",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=Path,
+        default=None,
+        help="path to output file",
+    )
 
     # Run program
     args = parser.parse_args()
-    image_path: str = args.image_path
+    image_path: Path = args.image_path
     dct_coefficient_range: range = args.dct_range
+    debug: bool = args.debug
+    quiet: bool = args.quiet
+    output_path: Path = (
+        args.output if args.output else Path("output") / f"adjpeg_{image_path.name}"
+    )
 
     try:
-        img = jpeglib.read_dct(image_path)
+        img = jpeglib.read_dct(str(image_path))
     except FileNotFoundError as e:
         print(e)
         exit(e.errno)
@@ -89,7 +115,12 @@ if __name__ == "__main__":
     )
 
     try:
-        adjpeg_localization(img, dct_coefficient_range)
+        likelyhood_map = adjpeg_localization(
+            img, dct_coefficient_range, __DEBUG__=debug, quiet=quiet
+        )
     except ValueError as e:
         print(e)
         exit(1)
+
+    print(f"\nWriting likelyhood map to {str(output_path)}")
+    write_img_output(likelyhood_map, output_path)

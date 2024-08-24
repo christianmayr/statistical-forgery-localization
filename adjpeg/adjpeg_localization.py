@@ -67,7 +67,9 @@ def periodic_dq_function(value, q1: int, q2: int):
     return result if result > 0 else 1
 
 
-def adjpeg_localization(img: DCTJPEG, dct_coefficient_range: range, quiet=False):
+def adjpeg_localization(
+    img: DCTJPEG, dct_coefficient_range: range, quiet=False, __DEBUG__=False
+):
     """
     Localize and detect manipulations in double compressed images. Uses single-compression forgery hypothesis.
 
@@ -83,7 +85,9 @@ def adjpeg_localization(img: DCTJPEG, dct_coefficient_range: range, quiet=False)
 
     if not quiet:
         print("\nEstimating primary quantization step")
-    Q1 = primary_quantization_estimation(img, dct_coefficient_range)
+    Q1 = primary_quantization_estimation(
+        img, dct_coefficient_range, __DEBUG__=__DEBUG__
+    )
     Q2 = img.qt[0]
 
     if not quiet:
@@ -138,31 +142,5 @@ def adjpeg_localization(img: DCTJPEG, dct_coefficient_range: range, quiet=False)
                 )
 
         likelyhood_map *= probability_H0 / probability_H1
-
-    # output image
-    if not quiet:
-        print("Writing likelyhood map to output/output.jpeg")
-
-    assert (
-        likelyhood_map.max() - likelyhood_map.min() != 0
-    ), "Likelyhood map is the same over all values"
-
-    likelyhood_map_scaled = (
-        (likelyhood_map - likelyhood_map.min())
-        * 255
-        / (likelyhood_map.max() - likelyhood_map.min())
-    )
-
-    block_shape = (8, 8)
-    jpeg_block = np.ones(block_shape)
-
-    likelyhood_map_expanded = np.kron(likelyhood_map_scaled, jpeg_block)
-    likelyhood_map_image = np.expand_dims(likelyhood_map_expanded, axis=-1)
-
-    img_output = jpeglib.from_spatial(likelyhood_map_image.astype(np.uint8))
-    img_output.height = img.Y.shape[0] * block_shape[0]
-    img_output.width = img.Y.shape[1] * block_shape[1]
-
-    img_output.write_spatial("output/output.jpeg")
 
     return likelyhood_map
