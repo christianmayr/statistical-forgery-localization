@@ -1,3 +1,6 @@
+[![Lint % Test](https://github.com/christianmayr/statistical-forgery-localization/actions/workflows/python-app.yml/badge.svg?branch=main)](https://github.com/christianmayr/statistical-forgery-localization/actions/workflows/python-app.yml)
+![Python Version](https://img.shields.io/badge/python-3.11-blue.svg)
+
 # Statistical Forgery Localization
 
 Attempted implementation of the statistical approach towards aligned double-JPEG compression detection (ADJPEG) as laid out in the [paper](https://ieeexplore.ieee.org/document/6151134) by Bianchi and Piva.
@@ -8,7 +11,7 @@ The implementation uses a mixture model to estimate the first compression. The m
 
 - pip install `requirements.txt`
 
-```
+```text
 usage: adjpeg [-h] [--dct-range range] [--quiet] [--debug] [--output OUTPUT] image_path
 
 positional arguments:
