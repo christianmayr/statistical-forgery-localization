@@ -48,8 +48,8 @@ def primary_quantization_estimation(
     img_0 = jpeglib.read_dct("temp/img_0.jpeg")
 
     # Create img_q2 (DCT coefficients sampled with only second compression)
-    img_spatial_cropped.write_spatial("img_q2.jpeg", qt=img.qt)
-    img_q2 = jpeglib.read_dct("img_q2.jpeg")
+    img_spatial_cropped.write_spatial("temp/img_q2.jpeg", qt=img.qt)
+    img_q2 = jpeglib.read_dct("temp/img_q2.jpeg")
 
     q1_result = np.full((8, 8), np.nan)
     l_sum = 0
