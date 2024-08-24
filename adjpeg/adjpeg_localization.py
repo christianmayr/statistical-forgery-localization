@@ -73,6 +73,9 @@ def adjpeg_localization(
 
     Args:
     - img: DCTJPEG image object
+    - dct_coefficient_range: range() of DCT coefficients to be used for the calculation
+    - quiet: reduce output
+    - __DEBUG__: increase output
 
     Returns: likelyhood map
     """

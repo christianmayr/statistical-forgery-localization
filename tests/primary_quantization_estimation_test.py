@@ -25,26 +25,21 @@ class Benchmark(unittest.TestCase):
 
 class BasicOperation(unittest.TestCase):
     def test_runs_without_exception(self):
-        img = load_image("./images/halves/0_DC_75_0_80_0.jpeg")
+        img = load_image("./images/halves/0_DC_50_0_80_0.jpeg")
         result = primary_quantization_estimation(
             img,
-            range(0, 10),
-            max_dct_abs_value=40,
+            range(0, 20),
             max_quantization_step=20,
             __DEBUG__=True,
         )
 
     def test_with_QF_75_80(self):
         img = load_image("./images/0_DC_75_0_80_0.jpeg")
-        result = primary_quantization_estimation(
-            img, range(0, 10), max_dct_abs_value=15, __DEBUG__=True
-        )
+        result = primary_quantization_estimation(img, range(0, 10), __DEBUG__=True)
 
     def test_with_QF_50_80(self):
         img = load_image("./images/0_DC_50_0_80_0.jpeg")
-        result = primary_quantization_estimation(
-            img, range(0, 32), max_dct_abs_value=15, __DEBUG__=True
-        )
+        result = primary_quantization_estimation(img, range(0, 32), __DEBUG__=True)
 
         ref = numpy.array(
             [

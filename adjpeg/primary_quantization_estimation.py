@@ -4,11 +4,12 @@ import jpeglib
 from jpeglib import DCTJPEG
 from utils import zz_index_8x8
 
+DCT_RANGE = 1024
+
 
 def primary_quantization_estimation(
     img: jpeglib.DCTJPEG,
     dct_coefficient_range: range,
-    max_dct_abs_value: int = 15,
     max_quantization_step=100,
     __DEBUG__=False,
 ):
@@ -17,6 +18,9 @@ def primary_quantization_estimation(
 
     Args:
     - img: jpeglib image object
+    - dct_coefficient_range: range() of DCT coefficients to be used for the calculation
+    - max_quantization_step: highest quantization step value to be considered for the calculation
+    - __DEBUG__: increase output
 
     Returns: Quantization matrix
     """
@@ -65,13 +69,13 @@ def primary_quantization_estimation(
         # create histogram of single compressed version
         img_q2_Y_dct_histogram, _ = np.histogram(
             img_q2_Y_dct,
-            bins=np.arange(-max_dct_abs_value, max_dct_abs_value + 2) - 0.5,
+            bins=np.arange(-DCT_RANGE, DCT_RANGE + 2) - 0.5,
         )
 
         # get DCT coefficient array from the original image and calculate the histogram
         img_Y_dct_histogram, _ = np.histogram(
             img.Y[:, :, x, y],
-            bins=np.arange(-max_dct_abs_value, max_dct_abs_value + 2) - 0.5,
+            bins=np.arange(-DCT_RANGE, DCT_RANGE + 2) - 0.5,
         )
 
         # get quantization step of the qt in the original image for the corresponding current_coefficient
@@ -94,7 +98,7 @@ def primary_quantization_estimation(
             # calculate the histogram of the double quantized coefficients
             img_c2_Y_dct_histogram, _ = np.histogram(
                 img_c2_Y_dct,
-                bins=np.arange(-max_dct_abs_value, max_dct_abs_value + 2) - 0.5,
+                bins=np.arange(-DCT_RANGE, DCT_RANGE + 2) - 0.5,
             )
 
             # TODO: Maybe add gaussean filter to img_c2_Y_dct_histogram to implement R/T error
@@ -119,9 +123,7 @@ def primary_quantization_estimation(
             )
             print("index\timg\tapprox")
             for i in range(len(w_histogram)):
-                print(
-                    f"{i-max_dct_abs_value}\t{img_Y_dct_histogram[i]}\t{w_histogram[i]}"
-                )
+                print(f"{i-DCT_RANGE}\t{img_Y_dct_histogram[i]}\t{w_histogram[i]}")
 
     if __DEBUG__:
         print(f"Error Sum: {l_sum}")
