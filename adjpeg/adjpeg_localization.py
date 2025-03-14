@@ -76,7 +76,7 @@ def adjpeg_localization(
     - quiet: reduce output
     - __DEBUG__: increase output
 
-    Returns: likelyhood map
+    Returns: likelihood map
     """
     # assure JPEG image has 64 coefficients per block
     assert (
@@ -91,18 +91,22 @@ def adjpeg_localization(
     Q2 = img.qt[0]
 
     if not quiet:
+        print("Estimated primary quantization table:")
+        print(Q1)
+
+    if not quiet:
         print("Estimating unquantized DCT coefficients")
     img0 = estimate_unquantized_DCT(img)
 
-    # likelyhood map does not yet fulfill SCF hypothesis
-    likelyhood_map = np.full(img.Y.shape[:2], 1, dtype=float)
+    # likelihood map does not yet fulfill SCF hypothesis
+    likelihood_map = np.full(img.Y.shape[:2], 1, dtype=float)
 
     # set image block height and width for quick reference:
     block_width = img.width_in_blocks(0)
     block_height = img.height_in_blocks(0)
 
     if not quiet:
-        print("Starting likelyhood map calculation")
+        print("Starting likelihood map calculation")
     for current_coefficient in dct_coefficient_range:
         if not quiet:
             print(f"\tCurrent DCT coefficient: {current_coefficient}")
@@ -141,6 +145,6 @@ def adjpeg_localization(
                     value, current_q1, current_q2
                 )
 
-        likelyhood_map *= probability_H0 / probability_H1
+        likelihood_map *= probability_H0 / probability_H1
 
-    return likelyhood_map
+    return likelihood_map
