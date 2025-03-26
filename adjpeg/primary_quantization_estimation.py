@@ -105,7 +105,10 @@ def primary_quantization_estimation(
             # compare the histogram of the original image to the mixture of estimated histograms
             original_histogram = img_Y_dct_histogram
             estimated_histogram = (
-                0.5 * img_c2_Y_dct_histogram + 0.5 * img_q2_Y_dct_histogram
+                0.5 * img_c2_Y_dct_histogram
+                + 0.5 * img_q2_Y_dct_histogram
+                # 0.01 * img_c2_Y_dct_histogram
+                # + 0.99 * img_q2_Y_dct_histogram
             )
             l = np.sum(np.abs(np.subtract(estimated_histogram, original_histogram)))
 
